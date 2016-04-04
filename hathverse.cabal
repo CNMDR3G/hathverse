@@ -8,7 +8,7 @@ library
     exposed-modules:
         Db
       , View
-    -- other-modules:       
+    -- other-modules:
     build-depends:
           base
         , text
@@ -25,11 +25,17 @@ executable hathverse
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
-    build-depends: base
-                 , text
-                 , scotty
-                 , blaze-html
-                 , hathverse
+    include-dirs:   static
+    build-depends:
+          base
+        , text
+        , scotty
+        , blaze-html
+        , transformers
+        , postgresql-simple
+        , wai-middleware-static
+        , wai-extra
+        , hathverse
 
 source-repository head
     type:     git
