@@ -1,17 +1,36 @@
 name:          hathverse
-version:       0.0.1
+version:       0.0.2
 cabal-version: >= 1.8
 build-type:    Simple
 
-executable          hathverse
+library
+    hs-source-dirs: src
+    exposed-modules:
+        Db
+      , View
+    -- other-modules:       
+    build-depends:
+          base
+        , text
+        , bytestring
+        , transformers
+        , scotty
+        , blaze-html
+        , postgresql-simple
+    extensions:
+      OverloadedStrings
+
+executable hathverse
     hs-source-dirs: src
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
-    build-depends:  base
-                  , text
-                  , bytestring
-                  , transformers
-                  , scotty
-                  , blaze-html
-                  -- , postgresql-simple
+    build-depends: base
+                 , text
+                 , scotty
+                 , blaze-html
+                 , hathverse
+
+source-repository head
+    type:     git
+    location: https://github.com/CNMDR3G/hathverse
