@@ -6,17 +6,16 @@ module View.Homepage (
 import Control.Monad (forM_)
 import qualified Data.Text as T
 import View.Common
-import Text.Blaze.Html5 as H
-import Text.Blaze.Html5.Attributes as A
+import Lucid
 
-homepage :: [(Int, T.Text)] -> Html
+homepage :: [(Int, T.Text)] -> Html ()
 homepage idTitles = withTitleBody "home" $ do
-  h1 "Problem Set"
-  table ! class_ "table table-bordered table-hover" $ do
-    thead . tr $ do
-      th "#"
-      th "Problem Title"
-    tbody . forM_ idTitles $ \(pid, problemTitle) -> tr $ do
-        th . toHtml . T.pack $ show pid
-        td . toHtml $ problemTitle
+  h1_ "Problem Set"
+  table_ [class_ "table table-bordered table-hover"] $ do
+    thead_ . tr_ $ do
+      th_ "#"
+      th_ "Problem Title"
+    tbody_ . forM_ idTitles $ \(pid, problemTitle) -> tr_ $ do
+        th_ . toHtml . T.pack $ show pid
+        td_ . toHtml $ problemTitle
 

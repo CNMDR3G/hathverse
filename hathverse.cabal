@@ -14,8 +14,8 @@ library
         , text
         , bytestring
         , transformers
-        , scotty
-        , blaze-html
+        , lucid
+        , clay
         , postgresql-simple
     extensions:
       OverloadedStrings
@@ -29,13 +29,14 @@ executable hathverse
     build-depends:
           base
         , text
-        , scotty
-        , blaze-html
         , transformers
+        , hathverse
+        , scotty
+        , lucid
+        , clay
         , postgresql-simple
         , wai-middleware-static
         , wai-extra
-        , hathverse
 
 source-repository head
     type:     git

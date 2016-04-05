@@ -1,36 +1,34 @@
 {-# LANGUAGE OverloadedStrings, PartialTypeSignatures #-}
 module View.Common where
 
-import Prelude hiding (div)
-import Text.Blaze.Html5 as H
-import Text.Blaze.Html5.Attributes as A
+import Lucid
 
-headWithTitle :: Html -> Html
-headWithTitle pageTitle = H.head $ do
-    meta ! charset "utf-8"
-    meta ! httpEquiv "X-UA-Compatible" ! content "IE=edge"
-    meta ! name "viewport" ! content "width=device-width, initial-scale=1"
-    H.title pageTitle
-    link ! rel "stylesheet" ! type_ "text/css" ! href bootstrapCss
-    link ! rel "stylesheet" ! type_ "text/css" ! href "/css/default.css"
+headWithTitle :: Html () -> Html ()
+headWithTitle pageTitle = head_ $ do
+    meta_ [charset_ "utf-8"]
+    meta_ [httpEquiv_ "X-UA-Compatible", content_ "IE=edge"]
+    meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1"]
+    title_ pageTitle
+    link_ [rel_ "stylesheet", type_ "text/css", href_ bootstrapCss]
+    link_ [rel_ "stylesheet", type_ "text/css", href_ "/css/default.css"]
   where bootstrapCss = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
 
-navigation :: Html
+navigation :: Html ()
 navigation =
-  nav ! class_ "navbar navbar-dark navbar-fixed-top" $
-    div ! class_ "container" $ do
-      a ! class_ "navbar-brand" ! href "/" $ "Hathverse"
-      ul ! class_ "nav navbar-nav" $
-        li ! class_ "nav-item" $
-          a ! class_ "nav-link" ! href "/" $ "home"
+  nav_ [class_ "navbar navbar-dark navbar-fixed-top"] $
+    div_ [class_ "container"] $ do
+      a_ [class_ "navbar-brand", href_ "/"] "Hathverse"
+      ul_ [class_ "nav navbar-nav"] $
+        li_ [class_ "nav-item"] $
+          a_ [class_ "nav-link", href_ "/"] "home"
 
-withTitleBody :: Html -> Html -> Html
-withTitleBody pageTitle pageBody = docTypeHtml $ do
+withTitleBody :: Html () -> Html () -> Html ()
+withTitleBody pageTitle pageBody = doctypehtml_ $ do
     headWithTitle pageTitle
-    H.body $ do
+    body_ $ do
       navigation
-      div ! class_ "container" $ pageBody
-      script ! src jquery $ ""
-      script ! src bootstrapJs $ ""
+      div_ [class_ "container"] pageBody
+      script_ [src_ jquery] ("" :: String)
+      script_ [src_ bootstrapJs] ("" :: String)
   where jquery = "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"
         bootstrapJs = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
