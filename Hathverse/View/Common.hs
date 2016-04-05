@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, PartialTypeSignatures #-}
-module View.Common where
+module Hathverse.View.Common where
 
 import Lucid
 

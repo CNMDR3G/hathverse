@@ -1,15 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
-module View.Homepage (
-  homepage
-) where
+module Hathverse.View.Homepage where
 
+import Data.Int (Int64)
 import Control.Monad (forM_)
 import qualified Data.Text as T
-import View.Common
+import Hathverse.View.Common
 import Lucid
 
-homepage :: [(Int, T.Text)] -> Html ()
-homepage idTitles = withTitleBody "home" $ do
+homepageView :: [(Int64, T.Text)] -> Html ()
+homepageView idTitles = withTitleBody "home" $ do
   h1_ "Problem Set"
   table_ [class_ "table table-bordered table-hover"] $ do
     thead_ . tr_ $ do

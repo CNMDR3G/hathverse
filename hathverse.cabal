@@ -1,13 +1,14 @@
 name:          hathverse
-version:       0.0.2
+version:       0.0.3
 cabal-version: >= 1.8
 build-type:    Simple
 
 library
-    hs-source-dirs: src
+    hs-source-dirs: .
     exposed-modules:
-        Db
-      , View
+          Hathverse.Db
+          Hathverse.Css
+        , Hathverse.View
     -- other-modules:
     build-depends:
           base
@@ -16,12 +17,17 @@ library
         , transformers
         , lucid
         , clay
-        , postgresql-simple
+        , persistent
+        , persistent-template
+        , persistent-postgresql
+        , esqueleto
+        , monad-logger
+        , resource-pool
     extensions:
       OverloadedStrings
 
 executable hathverse
-    hs-source-dirs: src
+    hs-source-dirs: .
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
@@ -32,11 +38,16 @@ executable hathverse
         , transformers
         , hathverse
         , scotty
-        , lucid
-        , clay
-        , postgresql-simple
         , wai-middleware-static
         , wai-extra
+        , lucid
+        , clay
+        , persistent
+        , persistent-template
+        , persistent-postgresql
+        , esqueleto
+        , monad-logger
+        , resource-pool
 
 source-repository head
     type:     git

@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Css where
+module Hathverse.Css where
 
 import Prelude hiding (rem)
 import Clay
