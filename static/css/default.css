@@ -1,0 +1,15 @@
+nav {
+    margin-bottom: 2rem;
+    background-color: #392748; 
+    border-radius: 0 !important;
+}
+
+#description {
+    margin: 2rem 0;
+    font-size: 14pt;
+}
+
+.CodeMirror {
+    border: solid 1px #ddd;
+    height: auto;
+}

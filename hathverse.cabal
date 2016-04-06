@@ -7,8 +7,11 @@ library
     hs-source-dirs: .
     exposed-modules:
           Hathverse.Db
-          Hathverse.Css
         , Hathverse.View
+        , Hathverse.View.Common
+        , Hathverse.View.Homepage
+        , Hathverse.View.Problem
+        , Hathverse.Controller
     -- other-modules:
     build-depends:
           base
@@ -17,7 +20,6 @@ library
         , transformers
         , mtl
         , lucid
-        , clay
         , persistent
         , persistent-template
         , persistent-postgresql
@@ -29,29 +31,18 @@ library
       OverloadedStrings
 
 executable hathverse
-    hs-source-dirs: .
+    hs-source-dirs: app
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
     include-dirs:   static
     build-depends:
           base
-        , text
-        , transformers
         , mtl
         , hathverse
         , scotty
         , wai-middleware-static
         , wai-extra
-        , lucid
-        , clay
-        , persistent
-        , persistent-template
-        , persistent-postgresql
-        , esqueleto
-        , monad-logger
-        , resourcet
-        , resource-pool
 
 source-repository head
     type:     git

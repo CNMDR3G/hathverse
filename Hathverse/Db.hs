@@ -10,14 +10,17 @@
 module Hathverse.Db (
   runSql
 , SqlPool
+, Query
+, Problem(..)
 , allProblemIdTitles
+, getProblemById
 ) where
 
 import Data.Text (Text)
 import Data.Int (Int64)
 import Control.Arrow
 import Database.Persist.TH
-import Database.Persist.Postgresql
+import Database.Persist.Postgresql (ConnectionString, withPostgresqlPool)
 import Control.Monad.Reader
 import Control.Monad.Logger
 import Control.Monad.Trans.Resource (runResourceT)
@@ -45,20 +48,28 @@ connStr = "host=localhost dbname=hathverse user=hathverse"
 runSql :: (ConnectionPool -> IO ()) -> IO ()
 runSql action =
   runResourceT . runNoLoggingT $ withPostgresqlPool connStr 10 $ \pool -> liftIO $ do
-    runDb pool $ runMigration migrateAll
+    runSqlPersistMPool (runMigration migrateAll) pool
     action pool
 
 type SqlPool = Pool SqlBackend
+type Query a = ReaderT SqlPool IO a
 
-runDb :: SqlPool -> SqlPersistM a -> IO a
-runDb = flip runSqlPersistMPool
+runDb :: SqlPersistM a -> Query a
+runDb query = ask >>= lift . runSqlPersistMPool query
 
-allProblemIdTitles :: ReaderT SqlPool IO [(Int64, Text)]
-allProblemIdTitles = do
-  pool <- ask
-  lift . runDb pool $ do
+allProblemIdTitles :: Query [(Int64, Text)]
+allProblemIdTitles = runDb $ do
   idTitles <- select $
     from $ \problem -> do
       orderBy [asc (problem ^. ProblemId)]
-      return (problem ^.ProblemId, problem ^.ProblemTitle)
+      return (problem ^. ProblemId, problem ^. ProblemTitle)
   return $ ((fromSqlKey . unValue) *** unValue) <$> idTitles
+
+getProblemById :: Int64 -> Query (Int64, Problem)
+getProblemById problemId = runDb $ do
+  [problem] <- select $
+    from $ \problem -> do
+      where_ (problem ^. ProblemId ==. valkey problemId)
+      limit 1
+      return problem
+  return $ (fromSqlKey . entityKey) &&& entityVal $ problem
