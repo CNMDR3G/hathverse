@@ -4,7 +4,7 @@ import qualified Data.Text.Lazy as L
 import Lucid
 import Hathverse.Db
 import Hathverse.View
+import Control.Monad.Reader
 
-homepage :: SqlPool -> IO L.Text
-homepage pool =
-  renderText . homepageView <$> allProblemIdTitles pool
+homepage :: ReaderT SqlPool IO L.Text
+homepage = renderText . homepageView <$> allProblemIdTitles

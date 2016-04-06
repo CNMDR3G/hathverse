@@ -1,25 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
+import Control.Monad.Reader
 import System.Environment (lookupEnv)
-import Control.Monad.IO.Class (liftIO)
-import Web.Scotty as S
+import Web.Scotty
 import Network.Wai.Middleware.Static
-import Hathverse.Db (runPqPool)
+import Network.Wai.Middleware.RequestLogger
+import Hathverse.Db (runSql)
 import Hathverse.Css
 import Hathverse.Controller
 
 main :: IO ()
-main = runPqPool $ \pool -> do
+main = runSql $ \pool -> do
 
   port <- maybe 3000 read <$> lookupEnv "PORT"
 
   scotty port $ do
 
+    middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static"
 
-    S.get "/css/default.css" $ do
+    get "/css/default.css" $ do
       addHeader "Content-Type" "text/css"
       text defaultCss
 
-    get "/" $ liftIO (homepage pool) >>= html
+    get "/" $ liftIO (runReaderT homepage pool) >>= html

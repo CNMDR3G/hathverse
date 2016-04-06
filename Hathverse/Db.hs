@@ -5,12 +5,10 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE PartialTypeSignatures      #-}
-{-# LANGUAGE Rank2Types                 #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 
 module Hathverse.Db (
-  runPqPool
+  runSql
 , SqlPool
 , allProblemIdTitles
 ) where
@@ -20,8 +18,9 @@ import Data.Int (Int64)
 import Control.Arrow
 import Database.Persist.TH
 import Database.Persist.Postgresql
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.Logger (runStderrLoggingT)
+import Control.Monad.Reader
+import Control.Monad.Logger
+import Control.Monad.Trans.Resource (runResourceT)
 import Database.Esqueleto
 import Data.Pool (Pool)
 
@@ -43,20 +42,21 @@ Problem
 connStr :: ConnectionString
 connStr = "host=localhost dbname=hathverse user=hathverse"
 
-runPqPool :: (ConnectionPool -> IO ()) -> IO ()
-runPqPool action =
-  runStderrLoggingT . withPostgresqlPool connStr 10 $ \pool -> liftIO $ do
+runSql :: (ConnectionPool -> IO ()) -> IO ()
+runSql action =
+  runResourceT . runNoLoggingT $ withPostgresqlPool connStr 10 $ \pool -> liftIO $ do
     runDb pool $ runMigration migrateAll
     action pool
 
-type Query a = forall m. MonadIO m => SqlPersistT m a
 type SqlPool = Pool SqlBackend
 
 runDb :: SqlPool -> SqlPersistM a -> IO a
 runDb = flip runSqlPersistMPool
 
-allProblemIdTitles :: SqlPool -> IO [(Int64, Text)]
-allProblemIdTitles pool = runDb pool $ do
+allProblemIdTitles :: ReaderT SqlPool IO [(Int64, Text)]
+allProblemIdTitles = do
+  pool <- ask
+  lift . runDb pool $ do
   idTitles <- select $
     from $ \problem -> do
       orderBy [asc (problem ^. ProblemId)]

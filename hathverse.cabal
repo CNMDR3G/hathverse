@@ -15,6 +15,7 @@ library
         , text
         , bytestring
         , transformers
+        , mtl
         , lucid
         , clay
         , persistent
@@ -22,6 +23,7 @@ library
         , persistent-postgresql
         , esqueleto
         , monad-logger
+        , resourcet
         , resource-pool
     extensions:
       OverloadedStrings
@@ -36,6 +38,7 @@ executable hathverse
           base
         , text
         , transformers
+        , mtl
         , hathverse
         , scotty
         , wai-middleware-static
@@ -47,6 +50,7 @@ executable hathverse
         , persistent-postgresql
         , esqueleto
         , monad-logger
+        , resourcet
         , resource-pool
 
 source-repository head
