@@ -65,11 +65,13 @@ allProblemIdTitles = runDb $ do
       return (problem ^. ProblemId, problem ^. ProblemTitle)
   return $ ((fromSqlKey . unValue) *** unValue) <$> idTitles
 
-getProblemById :: Int64 -> Query (Int64, Problem)
+getProblemById :: Int64 -> Query (Maybe (Int64, Problem))
 getProblemById problemId = runDb $ do
-  [problem] <- select $
+  problems <- select $
     from $ \problem -> do
       where_ (problem ^. ProblemId ==. valkey problemId)
       limit 1
       return problem
-  return $ (fromSqlKey . entityKey) &&& entityVal $ problem
+  case problems of
+    [problem] -> return . Just $ (fromSqlKey . entityKey) &&& entityVal $ problem
+    _ -> return Nothing

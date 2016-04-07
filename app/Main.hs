@@ -21,7 +21,7 @@ main = runSql $ \pool -> do
 
     get "/" $ liftIO (runReaderT homepage pool) >>= html
 
-    get "/problem/:pid" $ do
+    get "/problems/:pid" $ do
       pid <- read <$> param "pid"
       content <- liftIO $ runReaderT (problemPage pid) pool
       html content

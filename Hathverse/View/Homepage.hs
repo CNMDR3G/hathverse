@@ -16,5 +16,5 @@ homepageView idTitles = withTitleBody "home" $ do
       th_ "#" >> th_ "Problem Title"
     tbody_ . forM_ idTitles $ \(pid, problemTitle) -> tr_ $ do
         th_ . toHtml . T.pack $ show pid
-        td_ $ a_ [href_ $ "/problem/" <> T.pack (show pid)] $ toHtml problemTitle
+        td_ $ a_ [href_ $ "/problems/" <> T.pack (show pid)] $ toHtml problemTitle
 

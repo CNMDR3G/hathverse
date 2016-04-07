@@ -9,15 +9,15 @@ headWithTitle pageTitle = head_ $ do
     meta_ [httpEquiv_ "X-UA-Compatible", content_ "IE=edge"]
     meta_ [name_ "viewport", content_ "width=device-width, initial-scale=1"]
     title_ pageTitle
-    link_ [rel_ "stylesheet", type_ "text/css", href_ "/css/default.css"]
     link_ [rel_ "stylesheet", type_ "text/css", href_ bootstrapCss]
     link_ [rel_ "stylesheet", type_ "text/css", href_ codemirrorCss]
+    link_ [rel_ "stylesheet", type_ "text/css", href_ "/css/default.css"]
     script_ [src_ codemirrorJs] ("" :: String)
     script_ [src_ codemirrorLangHs] ("" :: String)
-  where bootstrapCss = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
-        codemirrorJs = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.2/codemirror.min.js"
-        codemirrorCss = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.2/codemirror.min.css"
-        codemirrorLangHs = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.13.2/mode/haskell/haskell.min.js"
+  where bootstrapCss = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
+        codemirrorJs = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.js"
+        codemirrorCss = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.css"
+        codemirrorLangHs = "//cdn.bootcss.com/codemirror/5.12.0/mode/haskell/haskell.min.js"
 
 navigation :: Html ()
 navigation =
@@ -36,5 +36,5 @@ withTitleBody pageTitle pageBody = doctypehtml_ $ do
       div_ [class_ "container"] pageBody
       script_ [src_ jquery] ("" :: String)
       script_ [src_ bootstrapJs] ("" :: String)
-  where jquery = "https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"
-        bootstrapJs = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
+  where jquery = "//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"
+        bootstrapJs = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
