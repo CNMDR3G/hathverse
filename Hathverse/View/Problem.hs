@@ -17,4 +17,8 @@ problemView (Just (pid, Problem{..})) =
         h1_ idTitle
         div_ [id_ "description"] $ toHtml problemDescription
         div_ [id_ "code"] $ toHtml problemTemplate
+        div_ [id_ "buttons"] $
+          button_ [id_ "run", class_ "btn btn-primary"] $ toHtml ("run" :: String)
+        div_ [id_ "results"] $
+          pre_ [id_ "result"] $ toHtml ("" :: String)
         script_ [src_ "/js/problem.js"] ("" :: String)

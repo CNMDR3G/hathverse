@@ -13,3 +13,16 @@ nav {
     border: solid 1px #ddd;
     height: auto;
 }
+
+#buttons {
+    margin: 1rem 0;
+}
+
+#result {
+    width: 100%;
+    background-color: #eee;
+    border: solid 1px #ddd;
+    border-radius: 3px;
+    min-height: 2rem;
+}
+

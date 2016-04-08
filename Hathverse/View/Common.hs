@@ -12,11 +12,13 @@ headWithTitle pageTitle = head_ $ do
     link_ [rel_ "stylesheet", type_ "text/css", href_ bootstrapCss]
     link_ [rel_ "stylesheet", type_ "text/css", href_ codemirrorCss]
     link_ [rel_ "stylesheet", type_ "text/css", href_ "/css/default.css"]
+    script_ [src_ jquery] ("" :: String)
     script_ [src_ codemirrorJs] ("" :: String)
     script_ [src_ codemirrorLangHs] ("" :: String)
   where bootstrapCss = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
-        codemirrorJs = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.js"
         codemirrorCss = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.css"
+        jquery = "//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"
+        codemirrorJs = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.js"
         codemirrorLangHs = "//cdn.bootcss.com/codemirror/5.12.0/mode/haskell/haskell.min.js"
 
 navigation :: Html ()
@@ -34,7 +36,5 @@ withTitleBody pageTitle pageBody = doctypehtml_ $ do
     body_ $ do
       navigation
       div_ [class_ "container"] pageBody
-      script_ [src_ jquery] ("" :: String)
       script_ [src_ bootstrapJs] ("" :: String)
-  where jquery = "//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"
-        bootstrapJs = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
+  where bootstrapJs = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
