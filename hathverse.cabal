@@ -12,6 +12,7 @@ library
         , Hathverse.View.Homepage
         , Hathverse.View.Problem
         , Hathverse.Controller
+        , Hathverse.Checker
     -- other-modules:
     build-depends:
           base
@@ -27,6 +28,10 @@ library
         , monad-logger
         , resourcet
         , resource-pool
+        , directory
+        , process
+        , aeson
+        , async
     extensions:
       OverloadedStrings
 

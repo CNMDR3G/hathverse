@@ -11,6 +11,7 @@ module Hathverse.Db (
   runSql
 , SqlPool
 , Query
+, runQuery
 , Problem(..)
 , allProblemIdTitles
 , getProblemById
@@ -54,6 +55,9 @@ runSql action =
 type SqlPool = Pool SqlBackend
 type Query a = ReaderT SqlPool IO a
 
+runQuery :: SqlPool -> Query a -> IO a
+runQuery = flip runReaderT
+
 runDb :: SqlPersistM a -> Query a
 runDb query = ask >>= lift . runSqlPersistMPool query
 
@@ -65,7 +69,7 @@ allProblemIdTitles = runDb $ do
       return (problem ^. ProblemId, problem ^. ProblemTitle)
   return $ ((fromSqlKey . unValue) *** unValue) <$> idTitles
 
-getProblemById :: Int64 -> Query (Maybe (Int64, Problem))
+getProblemById :: Int64 -> Query (Maybe Problem)
 getProblemById problemId = runDb $ do
   problems <- select $
     from $ \problem -> do
@@ -73,5 +77,5 @@ getProblemById problemId = runDb $ do
       limit 1
       return problem
   case problems of
-    [problem] -> return . Just $ (fromSqlKey . entityKey) &&& entityVal $ problem
+    [problem] -> return . Just . entityVal $ problem
     _ -> return Nothing

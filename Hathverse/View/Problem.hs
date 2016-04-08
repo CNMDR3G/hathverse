@@ -9,9 +9,9 @@ import Hathverse.View.Common
 import Hathverse.Db (Problem(..))
 import Lucid
 
-problemView :: Maybe (Int64, Problem) -> Html ()
-problemView Nothing = withTitleBody "404" $ h1_ "Not found."
-problemView (Just (pid, Problem{..})) =
+problemView :: Int64 -> Maybe Problem -> Html ()
+problemView _ Nothing = withTitleBody "404" $ h1_ "Not found."
+problemView pid (Just Problem{..}) =
   let idTitle = toHtml $ "#" <> T.pack (show pid) <> " " <> problemTitle
   in  withTitleBody idTitle $ do
         h1_ idTitle

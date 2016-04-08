@@ -8,3 +8,16 @@ window.onload = function() {
     lineNumbers: true
   });
 }
+
+$("#run").click(function(){
+  if($("#run").hasClass("disabled")) return;
+  $("#run").addClass("disabled");
+  var pid = document.URL.substr(document.URL.lastIndexOf('/')+1);
+  pid = parseInt(pid);
+  var code = editor.getValue();
+  $.post("/check", JSON.stringify({"probId": pid, "solCode": code}),
+         function(data){
+           $("#result").html(data.result);
+           $("#run").removeClass("disabled");
+         }, "json");
+});

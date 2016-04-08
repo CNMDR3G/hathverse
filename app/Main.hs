@@ -6,7 +6,7 @@ import System.Environment (lookupEnv)
 import Web.Scotty
 import Network.Wai.Middleware.Static
 import Network.Wai.Middleware.RequestLogger
-import Hathverse.Db (runSql)
+import Hathverse.Db (runSql, runQuery)
 import Hathverse.Controller
 
 main :: IO ()
@@ -19,9 +19,12 @@ main = runSql $ \pool -> do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static"
 
-    get "/" $ liftIO (runReaderT homepage pool) >>= html
+    get "/" $ liftIO (runQuery pool homepage) >>= html
 
     get "/problems/:pid" $ do
       pid <- read <$> param "pid"
-      content <- liftIO $ runReaderT (problemPage pid) pool
-      html content
+      liftIO (runQuery pool $ problemPage pid) >>= html
+
+    post "/check" $ do
+      j <- jsonData
+      liftIO (runQuery pool $ checkApi j) >>= json
