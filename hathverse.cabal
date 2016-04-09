@@ -30,6 +30,7 @@ library
         , resource-pool
         , directory
         , process
+        , strict
         , aeson
         , async
     extensions:
