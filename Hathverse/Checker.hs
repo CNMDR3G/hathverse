@@ -31,7 +31,7 @@ check Problem{..} code = do
       (proc "docker" [ "run"
                      , "--name=" ++ submissionId
                      , "--interactive=true"
-                     -- , "--net=none" -- no network
+                     , "--net=none" -- no network
                      -- TODO: limit CPU/memory
                      , "--volume=" ++ dir ++ ":/mnt"
                      , "scturtle/hathverse" -- image name
