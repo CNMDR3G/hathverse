@@ -1,12 +1,10 @@
 # HOWTO download:
-# $ docker pull scturtle/hathverse
-FROM fpco/stack-build:lts-5.11
-MAINTAINER scturtle <scturtle@gmail.com>
-# setup ~/.stack/global-project/
-RUN stack setup
-# add extra package: IOSpec
-RUN sed -i -e "s/extra-deps: \[\]/extra-deps:\n- lazysmallcheck-0.6\n- Stream-0.4.7.2\n- IOSpec-0.3/g" ~/.stack/global-project/stack.yaml
-RUN stack install hspec IOSpec
+# $ docker pull scturtle/hathverse:alpine
+FROM mitchty/alpine-ghc:latest
+RUN apk update
+RUN apk add curl musl-dev
+RUN cabal update
+RUN curl https://www.stackage.org/lts-5.11/cabal.config?global=true >> ~/.cabal/config
+RUN cabal install hspec IOSpec split text unordered-containers vector
 # build with:
-# $ docker build -t scturtle/hathverse .
-# $ docker push scturtle/hathverse
+# $ docker build -t scturtle/hathverse:alpine .

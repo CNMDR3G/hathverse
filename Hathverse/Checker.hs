@@ -34,15 +34,14 @@ check Problem{..} code = do
                      , "--net=none" -- no network
                      -- TODO: limit CPU/memory
                      , "--volume=" ++ dir ++ ":/mnt"
-                     , "scturtle/hathverse" -- image name
-                     , "/bin/bash"
+                     , "scturtle/hathverse:alpine" -- image name
                      ])
       { std_in = CreatePipe , std_out = CreatePipe , std_err = CreatePipe }
 
   mapM_ (hPutStrLn hin)
-    [ "cd ~"
+    [ "cd /tmp"
     , "cp /mnt/* ."
-    , "stack ghc -- -Wall -O2 check.hs"
+    , "ghc -Wall -O2 check.hs"
     , "./check"
     ]
   hClose hin
