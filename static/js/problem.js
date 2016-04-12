@@ -15,9 +15,12 @@ $("#run").click(function(){
   var pid = document.URL.substr(document.URL.lastIndexOf('/')+1);
   pid = parseInt(pid);
   var code = editor.getValue();
-  $.post("/check", JSON.stringify({"probId": pid, "solCode": code}),
-         function(data){
+  $.ajax({url: "/check",
+          type: "POST",
+          data: JSON.stringify({"probId": pid, "solCode": code}),
+          contentType: "application/json",
+          success: function(data){
            $("#result").html(data.result);
            $("#run").removeClass("disabled");
-         }, "json");
+          }});
 });

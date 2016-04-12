@@ -34,7 +34,7 @@ app = do
     get ("problems" <//> var) $ \pid ->
       lucid =<< runQuery' (problemPage pid)
 
-    post "/check" $
+    post "check" $
       json =<< runQuery' . checkApi =<< jsonBody'
 
   where runQuery' action = runQuery $ \conn -> liftIO (runReaderT action conn)
