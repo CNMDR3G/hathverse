@@ -47,6 +47,7 @@ executable hathverse
         , text
         , mtl
         , Spock
+        , Spock-lucid
         , hathverse
         , wai-middleware-static
         , wai-extra

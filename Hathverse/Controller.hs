@@ -3,7 +3,6 @@ module Hathverse.Controller where
 
 import GHC.Generics (Generic)
 import Data.Int (Int64)
-import qualified Data.Text.Lazy as L
 import Data.Aeson
 import Control.Monad.Reader
 import Lucid
@@ -11,11 +10,11 @@ import Hathverse.Db
 import Hathverse.View
 import Hathverse.Checker
 
-homepage :: Query L.Text
-homepage = renderText . homepageView <$> allProblemIdTitles
+homepage :: Query (Html ())
+homepage = homepageView <$> allProblemIdTitles
 
-problemPage :: Int64 -> Query L.Text
-problemPage pid = renderText . problemView pid <$> getProblemById pid
+problemPage :: Int64 -> Query (Html ())
+problemPage pid = problemView pid <$> getProblemById pid
 
 data CheckRequest = CheckRequest {
     probId :: Int64

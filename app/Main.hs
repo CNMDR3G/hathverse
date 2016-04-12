@@ -2,10 +2,10 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 module Main (main) where
 
-import Data.Text.Lazy (toStrict)
 import Control.Monad.Reader
 import System.Environment (lookupEnv)
 import Web.Spock.Safe
+import Web.Spock.Lucid
 import Network.Wai.Middleware.Static
 import Network.Wai.Middleware.RequestLogger
 import qualified Hathverse.Db as Db
@@ -28,17 +28,13 @@ app = do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static"
 
-    get root $ do
-      htmlText <- runQuery' homepage
-      html . toStrict $ htmlText
+    get root $
+      lucid =<< runQuery' homepage
 
-    get ("problems" <//> var) $ \pid -> do
-      htmlText <- runQuery' $ problemPage pid
-      html . toStrict $ htmlText
+    get ("problems" <//> var) $ \pid ->
+      lucid =<< runQuery' (problemPage pid)
 
-    post "/check" $ do
-      j <- jsonBody'
-      reply <- runQuery' $ checkApi j
-      json reply
+    post "/check" $
+      json =<< runQuery' . checkApi =<< jsonBody'
 
   where runQuery' action = runQuery $ \conn -> liftIO (runReaderT action conn)
