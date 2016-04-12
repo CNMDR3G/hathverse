@@ -16,6 +16,15 @@ homepage = homepageView <$> allProblemIdTitles
 problemPage :: Int64 -> Query (Html ())
 problemPage pid = problemView pid <$> getProblemById pid
 
+signupPage :: Html ()
+signupPage =  signupView
+
+signupResultPage :: String -> Html ()
+signupResultPage i = signupResult  i
+
+loginPage :: String -> Html ()
+loginPage i = loginView  i
+
 data CheckRequest = CheckRequest {
     probId :: Int64
   , solCode :: String
