@@ -44,9 +44,10 @@ executable hathverse
     include-dirs:   static
     build-depends:
           base
+        , text
         , mtl
+        , Spock
         , hathverse
-        , scotty
         , wai-middleware-static
         , wai-extra
 
