@@ -8,10 +8,8 @@
 {-# LANGUAGE EmptyDataDecls             #-}
 
 module Hathverse.Db (
-  runSql
-, SqlPool
+  runConnPool
 , Query
-, runQuery
 , Problem(..)
 , allProblemIdTitles
 , getProblemById
@@ -46,20 +44,17 @@ Problem
 connStr :: ConnectionString
 connStr = "host=localhost dbname=hathverse user=hathverse"
 
-runSql :: (ConnectionPool -> IO ()) -> IO ()
-runSql action =
+runConnPool :: (ConnectionPool -> IO ()) -> IO ()
+runConnPool action =
   runResourceT . runNoLoggingT $ withPostgresqlPool connStr 10 $ \pool -> liftIO $ do
     runSqlPersistMPool (runMigration migrateAll) pool
     action pool
 
-type SqlPool = Pool SqlBackend
-type Query a = ReaderT SqlPool IO a
-
-runQuery :: SqlPool -> Query a -> IO a
-runQuery = flip runReaderT
+-- type ConnPool = Pool SqlBackend
+type Query a = ReaderT SqlBackend IO a
 
 runDb :: SqlPersistM a -> Query a
-runDb query = ask >>= lift . runSqlPersistMPool query
+runDb query = ask >>= lift . runSqlPersistM query
 
 allProblemIdTitles :: Query [(Int64, Text)]
 allProblemIdTitles = runDb $ do
