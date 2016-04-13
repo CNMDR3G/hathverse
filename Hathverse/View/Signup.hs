@@ -1,18 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 module Hathverse.View.Signup where
 
-import Data.Int (Int64)
-import Data.Monoid ((<>))
-import qualified Data.Text as T
 import Hathverse.View.Common
 import Lucid
 
+signupResult :: String -> HtmlGen
+signupResult = toHtml
 
-signupResult :: String -> Html()
-signupResult userid = toHtml userid
-
-signupView ::  Html ()
+signupView ::  HtmlGen
 signupView = withTitleBody "signup" $ do
         script_ "function check(){if(userform.password.value!=userform.password2.value){            alert('The password must be equal');            return false;        }        else{           return true;        }    }"
         form_ [action_ "/signup", method_ "post",onsubmit_ "return check();" , name_ "userform"] $ do

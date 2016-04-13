@@ -27,3 +27,11 @@ nav {
     padding: 5px;
 }
 
+.login-form {
+    margin: 0 auto;
+    max-width: 400px;
+}
+
+#signup-btn {
+    margin-left: 15px;
+}

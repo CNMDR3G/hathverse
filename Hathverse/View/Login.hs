@@ -1,28 +1,33 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+
 module Hathverse.View.Login where
 
-import Data.Int (Int64)
-import Data.Monoid ((<>))
-import qualified Data.Text as T
 import Hathverse.View.Common
-import Hathverse.Db ()
 import Lucid
 
+loginView :: HtmlGen
+loginView = withTitleBody "login" $ do
 
-loginView :: String ->  Html ()
-loginView inString = withTitleBody "login" $ do
-        form_ [action_ "/login", method_ "post" , name_ "loginform"] $ do
-        table_ [class_ "table table-bordered table-hover"] $ do
-            tr_ $ do
-                td_ ""
-                td_ $ toHtml inString
-            tr_ $ do
-                td_ "username"
-                td_ $ input_ [type_ "text", name_ "username",pattern_ "[0-9a-zA-Z]+",maxlength_ "20"]
-            tr_ $ do
-                td_ "password"
-                td_ $ input_ [type_ "password", name_ "password",maxlength_ "20"]
-            tr_ $ do
-                td_ ""
-                td_ $ input_ [type_ "submit", value_ "login"]
+        div_ [class_ "login-form"] $ do
+
+          div_ [class_ "alert alert-danger", role_ "alert", id_ "err-msg", style_ "display: none"] ""
+
+          form_ [action_ "#"] $ do
+
+            div_ [class_ "form-group row"] $ do
+              _ <- label_ [class_ "col-sm-3 form-control-label", for_ "username"] "Username:"
+              div_ [class_ "col-sm-9"] $
+                input_ [id_ "username", class_ "form-control", type_ "text"]
+
+            div_ [class_ "form-group row"] $ do
+              _ <- label_ [class_ "col-sm-3 form-control-label", for_ "password"] "Password:"
+              div_ [class_ "col-sm-9"] $
+                input_ [id_ "password", class_ "form-control", type_ "password"]
+
+            div_ [class_ "form-group row"] $
+              div_ [class_ "col-sm-offset-3 col-sm-9"] $ do
+                button_ [class_ "btn btn-primary", id_ "login-btn"] "Log in"
+                button_ [class_ "btn btn-secondary", id_ "signup-btn"] "Sign up"
+
+        script_ [src_ "/js/login.js"] ("" :: String)

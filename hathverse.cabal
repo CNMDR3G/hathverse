@@ -1,5 +1,5 @@
 name:          hathverse
-version:       0.0.3
+version:       0.0.4
 cabal-version: >= 1.8
 build-type:    Simple
 
@@ -29,13 +29,12 @@ library
         , esqueleto
         , monad-logger
         , resourcet
-        , resource-pool
         , directory
         , process
         , strict
         , aeson
         , async
-        , pwstore-purehaskell
+        , pwstore-fast
     extensions:
       OverloadedStrings
 
@@ -54,8 +53,6 @@ executable hathverse
         , hathverse
         , wai-middleware-static
         , wai-extra
-        , pwstore-purehaskell
-        , text
 
 source-repository head
     type:     git

@@ -8,7 +8,7 @@ import qualified Data.Text as T
 import Hathverse.View.Common
 import Lucid
 
-homepageView :: [(Int64, T.Text)] -> Html ()
+homepageView :: [(Int64, T.Text)] -> HtmlGen
 homepageView idTitles = withTitleBody "home" $ do
   h1_ "Problem Set"
   table_ [class_ "table table-bordered table-hover"] $ do
