@@ -1,11 +1,5 @@
-module Hathverse.View (
-  module Hathverse.View.Homepage
-, module Hathverse.View.Problem
-, module Hathverse.View.Signup
-, module Hathverse.View.Login
-) where
+module Hathverse.View (module X) where
 
-import Hathverse.View.Homepage
-import Hathverse.View.Problem
-import Hathverse.View.Signup
-import Hathverse.View.Login
+import Hathverse.View.Homepage as X
+import Hathverse.View.Problem as X
+import Hathverse.View.Login as X

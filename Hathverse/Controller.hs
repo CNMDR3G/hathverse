@@ -33,14 +33,7 @@ problemPage pid = do
 loginPage :: Query ByteString
 loginPage = runHtml loginView
 
-data LoginSignupResult = LoginSignupResult {
-    ok :: Bool
-  , err :: String
-  } deriving Generic
-
-instance ToJSON LoginSignupResult
-
-loginSignupPost :: Text -> Text -> Text -> Query (LoginSignupResult, Maybe User)
+loginSignupPost :: Text -> Text -> Text -> Query (Value, Maybe User)
 loginSignupPost username password _type = do
   maybeUser <- getUserByUsername username
   (ok', err', sess) <-
@@ -65,7 +58,7 @@ loginSignupPost username password _type = do
                  insertedUser <- getUserByUsername username
                  return (True, show userid, insertedUser)
            _ -> return (False, "?", Nothing)
-  return (LoginSignupResult ok' err', sess)
+  return (object ["ok" .= ok', "err" .= err'], sess)
 
 
 data CheckRequest = CheckRequest {
@@ -75,16 +68,12 @@ data CheckRequest = CheckRequest {
 
 instance FromJSON CheckRequest
 
-data CheckResult = CheckResult {
-    result :: String
-  } deriving Generic
-
-instance ToJSON CheckResult
-
-checkApi :: CheckRequest -> Query CheckResult
+checkApi :: CheckRequest -> Query Value
 checkApi (CheckRequest pid code) = do
   prob <- getProblemById pid
   case prob of
-    Nothing -> return $ CheckResult "Problem not found."
-    Just problem -> lift $ CheckResult <$> check problem code
+    Nothing -> return $ object ["result" .= ("Problem not found." :: String)]
+    Just problem -> do
+      result <- lift $ check problem code
+      return $ object ["result" .= result]
 
