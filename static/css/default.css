@@ -19,12 +19,7 @@ nav {
 }
 
 #result {
-    width: 100%;
-    background-color: #eee;
-    border: solid 1px #ddd;
-    border-radius: 3px;
-    min-height: 2rem;
-    padding: 5px;
+    margin-bottom: 0;
 }
 
 .login-form {

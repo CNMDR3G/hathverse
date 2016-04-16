@@ -68,12 +68,11 @@ data CheckRequest = CheckRequest {
 
 instance FromJSON CheckRequest
 
-checkApi :: CheckRequest -> Query Value
+checkApi :: CheckRequest -> Query CheckResult
 checkApi (CheckRequest pid code) = do
   prob <- getProblemById pid
   case prob of
-    Nothing -> return $ object ["result" .= ("Problem not found." :: String)]
-    Just problem -> do
-      result <- lift $ check problem code
-      return $ object ["result" .= result]
-
+    Nothing ->
+      return CheckResult { ok=False , output = "Problem not found." }
+    Just problem ->
+      lift $ check problem code

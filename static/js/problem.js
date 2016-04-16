@@ -20,7 +20,14 @@ $("#run").click(function(){
           data: JSON.stringify({"probId": pid, "solCode": code}),
           contentType: "application/json",
           success: function(data){
-           $("#result").html(data.result);
-           $("#run").removeClass("disabled");
+            $("#results").removeClass("alert-info alert-danger alert-success");
+            if(data.ok){
+              $("#results").addClass("alert-success");
+              $("#result").html("Well done!");
+            } else {
+              $("#results").addClass("alert-danger");
+              $("#result").html(data.output);
+            }
+            $("#run").removeClass("disabled");
           }});
 });
