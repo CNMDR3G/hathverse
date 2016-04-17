@@ -1,6 +1,5 @@
 Hathverse
 ---------
-[![Join the chat at https://gitter.im/CNMDR3G/hathverse](https://badges.gitter.im/CNMDR3G/hathverse.svg)](https://gitter.im/CNMDR3G/hathverse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Join the chat at https://gitter.im/CNMDR3G/hathverse](https://badges.gitter.im/CNMDR3G/hathverse.svg)](https://gitter.im/CNMDR3G/hathverse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
