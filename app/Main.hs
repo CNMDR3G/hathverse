@@ -2,6 +2,7 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 module Main (main) where
 
+import Data.Int (Int64)
 import Control.Monad.Reader
 import System.Environment (lookupEnv)
 import Web.Spock.Safe
@@ -21,7 +22,7 @@ main = runConnPool $ \pool -> do
   runSpock port $ spock appCfg app
 
 
-app :: SpockM _ (Maybe User) state ()
+app :: SpockM SqlBackend (Maybe (Int64, User)) state ()
 app = do
 
     middleware logStdoutDev
@@ -31,6 +32,12 @@ app = do
 
     get ("problems" <//> var) $ \pid ->
       lazyBytes =<< runQuery' (problemPage pid)
+
+    get "edit" $ requireAuth $ \user ->
+      lazyBytes =<< runQuery' (problemEditPage Nothing user)
+
+    get ("edit" <//> var) $ \pid -> requireAuth $ \user ->
+      lazyBytes =<< runQuery' (problemEditPage pid user)
 
     get "login" $ do
       sess <- readSession
@@ -53,7 +60,14 @@ app = do
     post "check" $
       json =<< runQuery' . checkApi =<< jsonBody'
 
-runQuery' action = do
-  sess <- readSession
-  runQuery $ \conn ->
-    liftIO (runReaderT action (Env conn sess))
+  where
+    requireAuth action = do
+      sess <- readSession
+      case sess of
+        Nothing -> redirect "login"
+        Just user -> action user
+
+    runQuery' action = do
+      sess <- readSession
+      runQuery $ \conn ->
+        liftIO (runReaderT action (Env conn sess))

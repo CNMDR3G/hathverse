@@ -2,10 +2,11 @@
 module Hathverse.View.Common where
 
 import Lucid
+import Data.Int (Int64)
 import Control.Monad.Reader
 import Hathverse.Db (User(..))
 
-type HtmlGen = HtmlT (Reader (Maybe User)) ()
+type HtmlGen = HtmlT (Reader (Maybe (Int64, User))) ()
 
 headWithTitle :: Monad m => HtmlT m () -> HtmlT m ()
 headWithTitle pageTitle = head_ $ do
@@ -33,7 +34,9 @@ navigation =
       ul_ [class_ "nav navbar-nav", style_ "float: right"] $ do
         maybeUser <- lift ask
         case maybeUser of
-          Just user -> do
+          Just (_, user) -> do
+            li_ [class_ "nav-item"] $
+              a_ [class_ "nav-link", href_ "/edit"] "contribute"
             li_ [class_ "nav-item"] $
               a_ [class_ "nav-link", href_ "#"] $ toHtml $ userName user
             li_ [class_ "nav-item"] $
@@ -50,3 +53,6 @@ withTitleBody pageTitle pageBody = doctypehtml_ $ do
       div_ [class_ "container"] pageBody
       script_ [src_ bootstrapJs] ("" :: String)
   where bootstrapJs = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
+
+errorView :: HtmlGen -> HtmlGen
+errorView msg = withTitleBody "Error" $ h1_ msg

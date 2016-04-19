@@ -17,6 +17,8 @@ module Hathverse.Db (
 , getProblemById
 , addUser
 , getUserByUsername
+, SqlBackend
+, fromSqlKey
 ) where
 
 import Data.Text (Text)
@@ -30,24 +32,23 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Database.Esqueleto
 
 
--- | Initilize PostgreSQL database:
--- > initdb --locale en_US.UTF-8 -E UTF8 -D '/usr/local/var/postgres'
--- > createuser -s -e -d hathverse
--- > createdb hathverse -U hathverse
-
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Problem
     title        Text
+    authorId     UserId
     description  Text
-    template     Text
     moduleName   Text
+    template     Text
+    solution     Text
     checkProgram Text
+    isApproved   Bool
     deriving     Show
 User
-    name        Text
-    UniqueName  name
-    password    Text
-    deriving    Show
+    name         Text
+    UniqueName   name
+    password     Text
+    isAdmin      Bool
+    deriving     Show
 |]
 
 connStr :: ConnectionString
@@ -61,7 +62,7 @@ runConnPool action =
 
 data Env = Env {
     sqlHandler :: SqlBackend
-  , currUser :: Maybe User
+  , currUser :: Maybe (Int64, User)
   }
 
 type Query a = ReaderT Env IO a
@@ -88,7 +89,7 @@ getProblemById problemId = runDb $ do
     [problem] -> return . Just . entityVal $ problem
     _ -> return Nothing
 
-getUserByUsername :: Text -> Query (Maybe User)
+getUserByUsername :: Text -> Query (Maybe (Int64, User))
 getUserByUsername username = runDb $ do
   users <- select $
     from $ \user -> do
@@ -96,9 +97,10 @@ getUserByUsername username = runDb $ do
       limit 1
       return user
   case users of
-    [user] -> return . Just . entityVal $ user
+    [user] -> return . Just $
+      ((fromSqlKey . entityKey) &&& entityVal) user
     _ -> return Nothing
 
 addUser :: Text -> Text -> Query (Key User)
 addUser username hashPassword =
-  runDb . insert $ User username hashPassword
+  runDb . insert $ User username hashPassword False

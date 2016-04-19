@@ -11,6 +11,7 @@ library
         , Hathverse.View.Common
         , Hathverse.View.Homepage
         , Hathverse.View.Problem
+        , Hathverse.View.ProblemEdit
         , Hathverse.View.Login
         , Hathverse.Controller
         , Hathverse.Checker
@@ -34,6 +35,7 @@ library
         , aeson
         , async
         , pwstore-fast
+        , xss-sanitize
     extensions:
       OverloadedStrings
 
