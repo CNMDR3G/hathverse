@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE LambdaCase #-}
 module Hathverse.Checker where
 
 import GHC.Generics (Generic)
@@ -92,12 +93,12 @@ check Problem{..} code =
         , "./check 2>&1"
         ]
       hClose hin
-      maybeOutput <- timeout (60 * 1000000) (Strict.hGetContents hout)
-      case maybeOutput of
-        Nothing -> pure $ CheckResult False "Timeout."
-        Just output ->
-               let ok = (not . null) output &&
-                     case words . last . lines $ output of
-                       [_, _, "0", "failures"] -> True
-                       _ -> False
-               in pure $ CheckResult ok output
+      timeout (60 * 1000000) (Strict.hGetContents hout) >>= pure .
+        \case
+           Nothing -> CheckResult False "Timeout."
+           Just output ->
+             let ok | (not . null) output
+                    , [_, _, "0", "failures"] <- words . last . lines $ output
+                    = True
+                    | otherwise = False
+             in CheckResult ok output
