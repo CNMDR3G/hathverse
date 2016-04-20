@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 module Hathverse.Controller where
 
 import GHC.Generics (Generic)
@@ -45,6 +46,52 @@ problemEditPage maybePid (uid, user) =
             then runHtml $ problemEditView (Just (pid, prob))
             else runHtml $ errorView "Not authorized."
 
+data EditRequest = EditRequest {
+    edittype :: Text
+  , editpid :: Int64
+  , title :: Text
+  , desc :: Text
+  , modulename :: Text
+  , template :: Text
+  , solution :: Text
+  , checkprog :: Text
+  } deriving Generic
+
+instance FromJSON EditRequest
+
+editPost :: Int64 -> EditRequest -> Query CheckResult
+editPost uid EditRequest{..} = do
+  orig <- getProblemById editpid
+  let prob = Problem { -- fake one
+          problemTitle = title
+        , problemAuthorId =
+            case orig of
+              Nothing -> toSqlKey uid
+              Just Problem{..} -> problemAuthorId
+        , problemDescription = desc
+        , problemModuleName = modulename
+        , problemTemplate = template
+        , problemSolution = solution
+        , problemCheckProgram = checkprog
+        , problemIsApproved =
+            case orig of
+              Nothing -> False -- not approved when created
+              Just Problem{..} -> problemIsApproved
+        }
+  case edittype of
+       -- just test the solution
+       "run" -> lift $ check prob $ T.unpack solution
+       -- insert or update
+       "submit" ->
+         if editpid == -1 {- new -}
+           then do
+             newid <- insertProblem prob
+             return CheckResult {ok=True, output="New problem #" ++ show newid ++ " created."}
+           else do
+             updateProblem editpid prob
+             return CheckResult {ok=True, output="Problem updated."}
+       _ -> return CheckResult {ok=False, output="Unknown action."}
+
 loginPage :: Query ByteString
 loginPage = runHtml loginView
 
@@ -78,16 +125,16 @@ loginSignupPost username password _type = do
 
 data CheckRequest = CheckRequest {
     probId :: Int64
-  , solCode :: String
+  , solCode :: Text
   } deriving Generic
 
 instance FromJSON CheckRequest
 
 checkApi :: CheckRequest -> Query CheckResult
-checkApi (CheckRequest pid code) = do
-  prob <- getProblemById pid
+checkApi CheckRequest{..} = do
+  prob <- getProblemById probId
   case prob of
     Nothing ->
-      return CheckResult { ok=False , output = "Problem not found." }
+      return CheckResult {ok=False, output="Problem not found."}
     Just problem ->
-      lift $ check problem code
+      lift $ check problem $ T.unpack solCode

@@ -28,6 +28,6 @@ loginView = withTitleBody "login" $ do
             div_ [class_ "form-group row"] $
               div_ [class_ "col-sm-offset-3 col-sm-9"] $ do
                 button_ [class_ "btn btn-primary", id_ "login-btn"] "Log in"
-                button_ [class_ "btn btn-secondary", id_ "signup-btn"] "Sign up"
+                button_ [class_ "btn btn-secondary", id_ "signup-btn" , style_ "margin-left: 1rem"] "Sign up"
 
         script_ [src_ "/js/login.js"] ("" :: String)

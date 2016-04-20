@@ -21,13 +21,15 @@ problemEditView maybeProblem =
             , problemTitle, problemDescription, problemModuleName
             , problemTemplate, problemSolution, problemCheckProgram
             )
-  in  withTitleBody (toHtml pageTitle) $ do
+  in withTitleBody (toHtml pageTitle) $ do
+
     h1_ (toHtml pageTitle)
-    form_ [action_ "#"] $ do
+
+    form_ [action_ "##", style_ "margin-top: 2rem"] $ do
 
       div_ [class_ "form-group"] $ do
         _ <- label_ [for_ "titleedit"] "Title:"
-        input_ [id_ "titleeidt", class_ "form-control", type_ "text", value_ probTitle]
+        input_ [id_ "titleedit", class_ "form-control", type_ "text", value_ probTitle]
 
       div_ [class_ "form-group"] $ do
         _ <- label_ [for_ "descedit"] "Description:"
@@ -52,7 +54,7 @@ problemEditView maybeProblem =
       div_ [id_ "buttons"] $ do
         button_ [id_ "run", class_ "btn btn-primary"]
           $ toHtml ("test run" :: String)
-        button_ [id_ "submit", class_ "btn btn-success", style_ "margin-left: 10px"]
+        button_ [id_ "submit", class_ "btn btn-success disabled", style_ "margin-left: 1rem"]
           $ toHtml ("submit" :: String)
 
       div_ [id_ "results", class_ "alert", style_ "display: none"] $

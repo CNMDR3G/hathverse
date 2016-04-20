@@ -20,6 +20,6 @@ problemView pid (Just Problem{..}) =
         div_ [id_ "code"] $ toHtml problemTemplate
         div_ [id_ "buttons"] $
           button_ [id_ "run", class_ "btn btn-primary"] $ toHtml ("run" :: String)
-        div_ [id_ "results", class_ "alert alert-info"] $
+        div_ [id_ "results", class_ "alert", style_ "display: none"] $
           pre_ [id_ "result"] $ toHtml ("" :: String)
         script_ [src_ "/js/problem.js"] ("" :: String)

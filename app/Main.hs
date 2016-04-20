@@ -2,11 +2,11 @@
 {-# LANGUAGE PartialTypeSignatures #-}
 module Main (main) where
 
+import Data.Aeson (object, (.=))
 import Data.Int (Int64)
 import Control.Monad.Reader
 import System.Environment (lookupEnv)
 import Web.Spock.Safe
--- import Web.Spock.Lucid
 import Network.Wai.Middleware.Static
 import Network.Wai.Middleware.RequestLogger
 import Hathverse.Db
@@ -46,6 +46,14 @@ app = do
 
     get ("edit" <//> var) $ \pid -> requireAuth $ \user ->
       lazyBytes =<< runQuery' (problemEditPage (Just pid) user)
+
+    post "edit" $ do
+      sess <- readSession
+      case sess of
+        Nothing ->
+          json $ object ["ok" .= False, "err" .= ("Session expired." :: String)]
+        Just (uid, _) ->
+          json =<< runQuery' . editPost uid =<< jsonBody'
 
     get "login" $ do
       sess <- readSession

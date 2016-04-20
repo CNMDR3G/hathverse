@@ -50,10 +50,10 @@ executable hathverse
         , text
         , mtl
         , Spock
-        , Spock-lucid
         , hathverse
         , wai-middleware-static
         , wai-extra
+        , aeson
 
 source-repository head
     type:     git

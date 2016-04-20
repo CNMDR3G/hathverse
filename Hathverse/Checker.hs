@@ -4,7 +4,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE LambdaCase #-}
 module Hathverse.Checker where
 
 import GHC.Generics (Generic)
@@ -58,8 +57,7 @@ check Problem{..} code =
          createProcess
            (proc "docker" dockerArgs)
              { std_in = CreatePipe
-             , std_out = CreatePipe
-             , std_err = CreatePipe }
+             , std_out = CreatePipe }
       pure (submissionId, dir, eResult)
 
     cleanupResource :: _ -> IO ()
@@ -93,12 +91,13 @@ check Problem{..} code =
         , "./check 2>&1"
         ]
       hClose hin
-      timeout (60 * 1000000) (Strict.hGetContents hout) >>= pure .
-        \case
-           Nothing -> CheckResult False "Timeout."
-           Just output ->
-             let ok | (not . null) output
-                    , [_, _, "0", "failures"] <- words . last . lines $ output
-                    = True
-                    | otherwise = False
-             in CheckResult ok output
+
+      maybeOutput <- timeout (60 * 1000000) (Strict.hGetContents hout)
+      return $ case maybeOutput of
+        Nothing -> CheckResult False "Timeout."
+        Just output ->
+          let ok | (not . null) output
+                 , [_, _, "0", "failures"] <- words . last . lines $ output
+                 = True
+                 | otherwise = False
+          in CheckResult ok output

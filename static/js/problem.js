@@ -1,15 +1,13 @@
 $(document).ready( function() {
     "use strict";
     var codeblock = $("#code");
-    var template = codeblock.html();
+    var template = codeblock.text();
     codeblock.html("");
     var editor = CodeMirror($("#code")[0], {
         mode: "haskell",
         value: template,
         lineNumbers: true
     });
-
-    $("#results").hide();
 
     $("#run").click(function(){
         if($("#run").hasClass("disabled")) return;
@@ -23,13 +21,13 @@ $(document).ready( function() {
                 contentType: "application/json",
                 success: function(data){
                     $("#results")
-                        .removeClass("alert-info alert-danger alert-success")
+                        .removeClass("alert-danger alert-success")
                         .show();
 
-                    $("#results").addClass(data.ok 
+                    $("#results").addClass(data.ok
                                            ? "alert-success"
                                            : "alert-danger");
-                    
+
                     $("#result").text(data.ok
                                       ? "Well done!"
                                       : (data.output || "<empty content>"));

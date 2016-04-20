@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE RecordWildCards            #-}
 
 module Hathverse.Db (
   runConnPool
@@ -15,10 +16,13 @@ module Hathverse.Db (
 , Env(..)
 , allProblemIdTitles
 , getProblemById
+, updateProblem
+, insertProblem
 , addUser
 , getUserByUsername
 , SqlBackend
 , fromSqlKey
+, toSqlKey
 ) where
 
 import Data.Text (Text)
@@ -89,6 +93,22 @@ getProblemById problemId = runDb $ do
     [problem] -> return . Just . entityVal $ problem
     _ -> return Nothing
 
+updateProblem :: Int64 -> Problem -> Query ()
+updateProblem pid Problem{..} = runDb $
+  update $ \prob -> do
+    set prob [
+            ProblemTitle        =. val problemTitle
+          , ProblemDescription  =. val problemDescription
+          , ProblemModuleName   =. val problemModuleName
+          , ProblemTemplate     =. val problemTemplate
+          , ProblemSolution     =. val problemSolution
+          , ProblemCheckProgram =. val problemCheckProgram
+          ]
+    where_ (prob ^. ProblemId ==. valkey pid)
+
+insertProblem :: Problem -> Query Int64
+insertProblem prob = fromSqlKey <$> runDb (insert prob)
+
 getUserByUsername :: Text -> Query (Maybe (Int64, User))
 getUserByUsername username = runDb $ do
   users <- select $
@@ -103,4 +123,4 @@ getUserByUsername username = runDb $ do
 
 addUser :: Text -> Text -> Query (Key User)
 addUser username hashPassword =
-  runDb . insert $ User username hashPassword False
+  runDb . insert $ User username hashPassword True -- all are admin for testing now
