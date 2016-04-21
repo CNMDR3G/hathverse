@@ -36,6 +36,7 @@ library
         , async
         , pwstore-fast
         , xss-sanitize
+        , time
     extensions:
       OverloadedStrings
 

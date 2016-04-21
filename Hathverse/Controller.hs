@@ -16,6 +16,8 @@ import Hathverse.Db
 import Hathverse.View
 import Hathverse.View.Common
 import Hathverse.Checker
+import Data.Maybe
+import Data.Time
 
 runHtml :: HtmlGen -> Query ByteString
 runHtml action = do
@@ -130,11 +132,21 @@ data CheckRequest = CheckRequest {
 
 instance FromJSON CheckRequest
 
-checkApi :: CheckRequest -> Query CheckResult
-checkApi CheckRequest{..} = do
+checkApi :: Maybe Int64 -> CheckRequest -> Query CheckResult
+checkApi maybeUid CheckRequest{..} = do
   prob <- getProblemById probId
   case prob of
     Nothing ->
       return CheckResult {ok=False, output="Problem not found."}
-    Just problem ->
-      lift $ check problem $ T.unpack solCode
+    Just problem -> do
+      mSubId <- if probId /= -1 && isJust maybeUid
+                   then do
+                     let Just uid = maybeUid
+                     t <- liftIO getCurrentTime
+                     Just <$> addSubmission (toSqlKey uid) (toSqlKey probId) solCode t
+                   else pure Nothing
+      (result@CheckResult {..}) <- lift $ check problem $ T.unpack solCode
+      case mSubId of
+          Nothing -> pure ()
+          Just subId -> updateSubmission (fromSqlKey subId) (T.pack output) ok
+      pure result

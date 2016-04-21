@@ -13,6 +13,7 @@ module Hathverse.Db (
 , Query
 , Problem(..)
 , User(..)
+, Submission(..)
 , Env(..)
 , allProblemIdTitles
 , getProblemById
@@ -23,6 +24,8 @@ module Hathverse.Db (
 , SqlBackend
 , fromSqlKey
 , toSqlKey
+, addSubmission
+, updateSubmission
 ) where
 
 import Data.Text (Text)
@@ -34,7 +37,7 @@ import Control.Monad.Reader
 import Control.Monad.Logger
 import Control.Monad.Trans.Resource (runResourceT)
 import Database.Esqueleto
-
+import Data.Time
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Problem
@@ -53,6 +56,14 @@ User
     password     Text
     isAdmin      Bool
     deriving     Show
+Submission
+    userId       UserId
+    problemId    ProblemId
+    sourceCode   Text
+    result       Text Maybe
+    accepted     Bool Maybe
+    date         UTCTime
+    deriving Show
 |]
 
 connStr :: ConnectionString
@@ -124,3 +135,16 @@ getUserByUsername username = runDb $ do
 addUser :: Text -> Text -> Query (Key User)
 addUser username hashPassword =
   runDb . insert $ User username hashPassword True -- all are admin for testing now
+
+addSubmission :: Key User -> Key Problem -> Text -> UTCTime -> Query (Key Submission)
+addSubmission uid pid srcContent dt =
+    runDb . insert $ Submission uid pid srcContent Nothing Nothing dt
+
+updateSubmission :: Int64 -> Text -> Bool -> Query ()
+updateSubmission subId result accepted = runDb $
+    update $ \submission -> do
+        set submission
+            [ SubmissionResult =. val (Just result)
+            , SubmissionAccepted =. val (Just accepted)
+            ]
+        where_ (submission ^. SubmissionId ==. valkey subId)

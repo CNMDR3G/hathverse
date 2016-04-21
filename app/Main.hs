@@ -73,8 +73,9 @@ app = do
       writeSession Nothing
       redirect "/login"
 
-    post "check" $
-      json =<< runQuery' . checkApi =<< jsonBody'
+    post "check" $ do
+      sess <- readSession
+      json =<< runQuery' . checkApi (fst <$> sess) =<< jsonBody'
 
   where
     requireAuth action = do
