@@ -16,7 +16,6 @@ import Hathverse.Db
 import Hathverse.View
 import Hathverse.View.Common
 import Hathverse.Checker
-import Data.Maybe
 import Data.Time
 
 runHtml :: HtmlGen -> Query ByteString
@@ -48,51 +47,28 @@ problemEditPage maybePid (uid, user) =
             then runHtml $ problemEditView (Just (pid, prob))
             else runHtml $ errorView "Not authorized."
 
-data EditRequest = EditRequest {
-    edittype :: Text
-  , editpid :: Int64
-  , title :: Text
-  , desc :: Text
-  , modulename :: Text
-  , template :: Text
-  , solution :: Text
-  , checkprog :: Text
-  } deriving Generic
+testPost :: Problem -> Query CheckResult
+testPost prob = lift . check prob . T.unpack $ problemSolution prob
 
-instance FromJSON EditRequest
+newPost :: Int64 -> Problem -> Query CheckResult
+newPost uid prob0 = do
+  let prob = prob0 { problemAuthorId = toSqlKey uid }
+  newid <- insertProblem prob
+  -- NOTE: "#pid" is need in the JS part
+  return CheckResult {ok=True, output="New problem #" ++ show newid ++ " created."}
 
-editPost :: Int64 -> EditRequest -> Query CheckResult
-editPost uid EditRequest{..} = do
-  orig <- getProblemById editpid
-  let prob = Problem { -- fake one
-          problemTitle = title
-        , problemAuthorId =
-            case orig of
-              Nothing -> toSqlKey uid
-              Just Problem{..} -> problemAuthorId
-        , problemDescription = desc
-        , problemModuleName = modulename
-        , problemTemplate = template
-        , problemSolution = solution
-        , problemCheckProgram = checkprog
-        , problemIsApproved =
-            case orig of
-              Nothing -> False -- not approved when created
-              Just Problem{..} -> problemIsApproved
-        }
-  case edittype of
-       -- just test the solution
-       "run" -> lift $ check prob $ T.unpack solution
-       -- insert or update
-       "submit" ->
-         if editpid == -1 {- new -}
-           then do
-             newid <- insertProblem prob
-             return CheckResult {ok=True, output="New problem #" ++ show newid ++ " created."}
-           else do
-             updateProblem editpid prob
-             return CheckResult {ok=True, output="Problem updated."}
-       _ -> return CheckResult {ok=False, output="Unknown action."}
+editPost :: Int64 -> Problem -> Query CheckResult
+editPost pid prob0 = do
+  maybeOrig <- getProblemById pid
+  case maybeOrig of
+    Nothing -> return CheckResult {ok=False, output="Problem not found."}
+    Just orig -> do
+      -- fix the unchanged part
+      let prob = prob0 { problemAuthorId = problemAuthorId orig
+                       , problemIsApproved = problemIsApproved orig }
+      updateProblem pid prob
+      return CheckResult {ok=True, output="Problem updated."}
+
 
 loginPage :: Query ByteString
 loginPage = runHtml loginView
@@ -139,12 +115,12 @@ checkApi maybeUid CheckRequest{..} = do
     Nothing ->
       return CheckResult {ok=False, output="Problem not found."}
     Just problem -> do
-      mSubId <- if probId /= -1 && isJust maybeUid
-                   then do
-                     let Just uid = maybeUid
-                     t <- liftIO getCurrentTime
-                     Just <$> addSubmission (toSqlKey uid) (toSqlKey probId) solCode t
-                   else pure Nothing
+      mSubId <-
+        case maybeUid of
+          Just uid -> do
+            t <- liftIO getCurrentTime
+            Just <$> addSubmission (toSqlKey uid) (toSqlKey probId) solCode t
+          Nothing -> pure Nothing
       (result@CheckResult {..}) <- lift $ check problem $ T.unpack solCode
       case mSubId of
           Nothing -> pure ()

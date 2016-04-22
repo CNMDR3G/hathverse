@@ -14,41 +14,40 @@ $(document).ready( function() {
     var template_editor = setup_codemirror("#template");
     var solution_editor = setup_codemirror("#solution");
     var checkprog_editor = setup_codemirror("#checkprogram");
-    var pid = document.URL.substr(document.URL.lastIndexOf('/')+1);
-    pid = parseInt(pid);
-    if(isNaN(pid)) pid = -1; // new
+    var pid = /problems\/(\d+)/.exec(document.URL);
+    if(pid != null) pid = pid[1];
 
-    var callback = function(type){
-        return function(){
-            if($("#run").hasClass("disabled")) return;
-            $("#run").addClass("disabled");
-            $.ajax({url: "/edit",
-                    type: "POST",
-                    data: JSON.stringify(
-                        {"edittype": type,
-                         "editpid": pid,
-                         "title": $("#titleedit").val(),
-                         "desc": $("#descedit").val(),
-                         "modulename": $("#modulename").val(),
-                         "template": template_editor.getValue(),
-                         "solution": solution_editor.getValue(),
-                         "checkprog": checkprog_editor.getValue(),
-                        }),
-                    contentType: "application/json",
-                    success: function(data){
-                        $("#results").removeClass("alert-danger alert-success").show();
-                        $("#results").addClass(data.ok ? "alert-success" : "alert-danger");
-                        $("#result").text(data.ok && type == "run"
-                                          ? "Well done!" : (data.output || "<empty content>"));
-                        $("#run").removeClass("disabled");
-                        if(data.ok)
-                            $("#submit").removeClass("disabled");
-                        else
-                            $("#submit").addClass("disabled");
-                        // if created then update pid so next time will be an update
-                        if(data.ok && type == "submit" && pid == -1)
-                            pid = parseInt(/#(\d+)/.exec(data.output)[1]);
-                }});}}
-    $("#run").click(callback("run"));
-    $("#submit").click(callback("submit"));
+    $("#buttons > .btn").click(function(){
+        var type = $(this).attr("id"); // "run" or "submit"
+        if($("#run").hasClass("disabled")) return;
+        $("#run").addClass("disabled");
+        var posturl = type == "run" ? "/problems/test" :
+              (pid == null ? "/problems/new" : ("/problems/"+pid+"/edit"));
+        $.ajax({url: posturl,
+                type: "POST",
+                data: JSON.stringify(
+                    {"problemTitle": $("#titleedit").val(),
+                     "problemAuthorId": -1, // fake
+                     "problemDescription": $("#descedit").val(),
+                     "problemModuleName": $("#modulename").val(),
+                     "problemTemplate": template_editor.getValue(),
+                     "problemSolution": solution_editor.getValue(),
+                     "problemCheckProgram": checkprog_editor.getValue(),
+                     "problemIsApproved": false, // for new or fake one for editing
+                    }),
+                contentType: "application/json",
+                success: function(data){
+                    $("#results").removeClass("alert-danger alert-success").show();
+                    $("#results").addClass(data.ok ? "alert-success" : "alert-danger");
+                    $("#result").text(data.ok && type == "run"
+                                      ? "Well done!" : (data.output || "<empty content>"));
+                    $("#run").removeClass("disabled");
+                    if(data.ok)
+                        $("#submit").removeClass("disabled");
+                    else
+                        $("#submit").addClass("disabled");
+                    // if created then update pid so next time will be an update
+                    if(data.ok && type == "submit" && pid == null)
+                        pid = parseInt(/#(\d+)/.exec(data.output)[1]);
+                }});});
 });

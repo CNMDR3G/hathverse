@@ -41,19 +41,26 @@ app = do
     get ("problems" <//> var) $ \pid ->
       lazyBytes =<< runQuery' (problemPage pid)
 
-    get "edit" $ requireAuth $ \user ->
-      lazyBytes =<< runQuery' (problemEditPage Nothing user)
+    post "problems/test" $
+      json =<< runQuery' . testPost =<< jsonBody'
 
-    get ("edit" <//> var) $ \pid -> requireAuth $ \user ->
-      lazyBytes =<< runQuery' (problemEditPage (Just pid) user)
+    get "problems/new" $
+      requireAuth (redirect "/login") $ \user ->
+        lazyBytes =<< runQuery' (problemEditPage Nothing user)
 
-    post "edit" $ do
-      sess <- readSession
-      case sess of
-        Nothing ->
-          json $ object ["ok" .= False, "err" .= ("Session expired." :: String)]
-        Just (uid, _) ->
-          json =<< runQuery' . editPost uid =<< jsonBody'
+    post "problems/new" $
+      let onfail = json $ object ["ok" .= False, "err" .= ("Session expired." :: String)] in
+      requireAuth onfail $ \(uid, _) ->
+        json =<< runQuery' . newPost uid =<< jsonBody'
+
+    get ("problems" <//> var <//> "edit") $ \pid ->
+      requireAuth (redirect "/login") $ \user ->
+        lazyBytes =<< runQuery' (problemEditPage (Just pid) user)
+
+    post ("problems" <//> var <//> "edit") $ \pid ->
+      let onfail = json $ object ["ok" .= False, "err" .= ("Session expired." :: String)] in
+      requireAuth onfail $ \_ ->
+          json =<< runQuery' . editPost pid =<< jsonBody'
 
     get "login" $ do
       sess <- readSession
@@ -78,10 +85,10 @@ app = do
       json =<< runQuery' . checkApi (fst <$> sess) =<< jsonBody'
 
   where
-    requireAuth action = do
+    requireAuth onfail action = do
       sess <- readSession
       case sess of
-        Nothing -> redirect "/login"
+        Nothing -> onfail
         Just user -> action user
 
     runQuery' action = do
