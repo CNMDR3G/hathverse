@@ -36,7 +36,7 @@ navigation =
         case maybeUser of
           Just (_, user) -> do
             li_ [class_ "nav-item"] $
-              a_ [class_ "nav-link", href_ "/edit"] "contribute"
+              a_ [class_ "nav-link", href_ "/problems/new"] "contribute"
             li_ [class_ "nav-item"] $
               a_ [class_ "nav-link", href_ "#"] $ toHtml $ userName user
             li_ [class_ "nav-item"] $

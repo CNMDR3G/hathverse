@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE DeriveGeneric              #-}
 
 module Hathverse.Db (
   runConnPool
@@ -38,6 +39,8 @@ import Control.Monad.Logger
 import Control.Monad.Trans.Resource (runResourceT)
 import Database.Esqueleto
 import Data.Time
+import GHC.Generics (Generic)
+import Data.Aeson
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Problem
@@ -49,7 +52,7 @@ Problem
     solution     Text
     checkProgram Text
     isApproved   Bool
-    deriving     Show
+    deriving     Generic
 User
     name         Text
     UniqueName   name
@@ -63,8 +66,10 @@ Submission
     result       Text Maybe
     accepted     Bool Maybe
     date         UTCTime
-    deriving Show
+    deriving     Show
 |]
+
+instance FromJSON Problem
 
 connStr :: ConnectionString
 connStr = "host=localhost dbname=hathverse user=hathverse"
