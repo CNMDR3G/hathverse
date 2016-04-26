@@ -13,6 +13,11 @@ type HtmlGen = HtmlT (Reader (Maybe (Int64, User))) ()
 bootstrapCdnSite :: Text
 bootstrapCdnSite = "//cdn.bootcss.com"
 
+-- try following CDNs if the one above doesn't work out.
+-- (seems only bootcss has all resources we want.)
+-- bootstrapCdnSite = "//maxcdn.bootstrapcdn.com"
+-- bootstrapCdnSite = "//ajax.googleapis.com/ajax/libs"
+
 bootstrapCss
   , bootstrapJs
   , jqueryJs
