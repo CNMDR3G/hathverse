@@ -4,6 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PatternGuards #-}
 module Hathverse.Checker where
 
 import GHC.Generics (Generic)
