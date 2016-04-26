@@ -5,8 +5,28 @@ import Lucid
 import Data.Int (Int64)
 import Control.Monad.Reader
 import Hathverse.Db (User(..))
+import Data.Text (Text)
+import Data.Monoid
 
 type HtmlGen = HtmlT (Reader (Maybe (Int64, User))) ()
+
+bootstrapCdnSite :: Text
+bootstrapCdnSite = "//cdn.bootcss.com"
+
+bootstrapCss
+  , bootstrapJs
+  , jqueryJs
+  , codemirrorCss
+  , codemirrorJs
+  , codemirrorLangHs
+  :: Text
+
+bootstrapCss = bootstrapCdnSite <> "/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
+bootstrapJs = bootstrapCdnSite <> "/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
+codemirrorCss = bootstrapCdnSite <> "/codemirror/5.12.0/codemirror.min.css"
+jqueryJs = bootstrapCdnSite <> "/jquery/1.11.3/jquery.min.js"
+codemirrorJs = bootstrapCdnSite <> "/codemirror/5.12.0/codemirror.min.js"
+codemirrorLangHs = bootstrapCdnSite <> "/codemirror/5.12.0/mode/haskell/haskell.min.js"
 
 headWithTitle :: Monad m => HtmlT m () -> HtmlT m ()
 headWithTitle pageTitle = head_ $ do
@@ -17,14 +37,9 @@ headWithTitle pageTitle = head_ $ do
     link_ [rel_ "stylesheet", type_ "text/css", href_ bootstrapCss]
     link_ [rel_ "stylesheet", type_ "text/css", href_ codemirrorCss]
     link_ [rel_ "stylesheet", type_ "text/css", href_ "/css/default.css"]
-    script_ [src_ jquery] ("" :: String)
+    script_ [src_ jqueryJs] ("" :: String)
     script_ [src_ codemirrorJs] ("" :: String)
     script_ [src_ codemirrorLangHs] ("" :: String)
-  where bootstrapCss = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css"
-        codemirrorCss = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.css"
-        jquery = "//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"
-        codemirrorJs = "//cdn.bootcss.com/codemirror/5.12.0/codemirror.min.js"
-        codemirrorLangHs = "//cdn.bootcss.com/codemirror/5.12.0/mode/haskell/haskell.min.js"
 
 navigation :: HtmlGen
 navigation =
@@ -52,7 +67,6 @@ withTitleBody pageTitle pageBody = doctypehtml_ $ do
       navigation
       div_ [class_ "container"] pageBody
       script_ [src_ bootstrapJs] ("" :: String)
-  where bootstrapJs = "//cdn.bootcss.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js"
 
 errorView :: HtmlGen -> HtmlGen
 errorView msg = withTitleBody "Error" $ h1_ msg
