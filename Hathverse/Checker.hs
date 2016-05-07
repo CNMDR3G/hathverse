@@ -8,19 +8,20 @@
 module Hathverse.Checker where
 
 import GHC.Generics (Generic)
-import qualified Data.Text as T
-import System.Process
-import System.Timeout
 import System.IO
-import System.Info
-import qualified System.IO.Strict as Strict
-import Control.Concurrent.Async
-import Data.Unique
-import Data.Aeson
+import System.Timeout (timeout)
+import System.Process
 import System.Directory
-import Hathverse.Db
+import System.Environment (lookupEnv)
+import qualified System.IO.Strict as Strict
+import Data.Unique (hashUnique, newUnique)
+import Data.Aeson (ToJSON)
+import Data.Maybe (isJust)
+import qualified Data.Text as T
+import Control.Monad
 import Control.Exception
-import Data.Functor
+import Control.Concurrent.Async
+import Hathverse.Db
 
 data CheckResult = CheckResult {
     ok :: Bool
@@ -29,21 +30,18 @@ data CheckResult = CheckResult {
 
 instance ToJSON CheckResult
 
- -- | Well, stolen from 99haskell...
 check :: Problem -> String -> IO CheckResult
 check Problem{..} code =
     bracket prepareCheck cleanupResource performCheck
   where
-    prepareCheck :: IO (String, FilePath, Either IOException _)
+    prepareCheck :: IO (String, FilePath, Either IOException _, Bool)
     prepareCheck = do
       submissionId <- ('h':) . show . hashUnique <$> newUnique
-      homeDir <- getHomeDirectory
-      let tmp = if os == "linux" then "/tmp" else homeDir
-          dir = tmp ++ "/hathverse/" ++ submissionId
+      tempdir <- getTemporaryDirectory
 
-      createDirectoryIfMissing True dir
-      writeFile (dir ++ "/" ++ T.unpack problemModuleName ++ ".hs") code
-      writeFile (dir ++ "/check.hs") $ T.unpack problemCheckProgram
+      createDirectoryIfMissing True tempdir
+      writeFile (tempdir ++ "/" ++ T.unpack problemModuleName ++ ".hs") code
+      writeFile (tempdir ++ "/check.hs") $ T.unpack problemCheckProgram
 
       let dockerArgs =
             [ "run"
@@ -51,45 +49,56 @@ check Problem{..} code =
             , "--interactive=true"
             , "--net=none" -- no network
             -- TODO: limit CPU/memory
-            , "--volume=" ++ dir ++ ":/mnt"
+            , "--volume=" ++ tempdir ++ ":/mnt"
             , "scturtle/hathverse:alpine" -- image name
             ]
+
+      runInDocker <- isJust <$> lookupEnv "RUNINDOCKER"
+
       eResult <- try $
          createProcess
-           (proc "docker" dockerArgs)
+           (if runInDocker
+               then proc "docker" dockerArgs
+               else proc "/bin/sh" [])
              { std_in = CreatePipe
-             , std_out = CreatePipe }
-      pure (submissionId, dir, eResult)
+             , std_out = CreatePipe
+             , std_err = CreatePipe }
+      pure (submissionId, tempdir, eResult, runInDocker)
 
     cleanupResource :: _ -> IO ()
-    cleanupResource (submissionId, dir, eResult) = do
+    cleanupResource (submissionId, tempdir, eResult, runInDocker) = do
       case eResult of
         Right (Just hIn, Just hOut, Just hErr, hProc) -> do
           -- closing a handler more than once is not considered an error,
           -- while this function does not know which handler has been closed,
           -- let's just close them all.
+          err <- hGetContents hErr
+          unless (null err) $
+            putStrLn $ "Error in " ++ submissionId ++ ": " ++ err
           mapM_ hClose [hIn, hOut, hErr]
           terminateProcess hProc
-        _ -> pure ()
+        _ -> putStrLn $ "Error in terminating " ++ submissionId
       void $ async $ do
-        result <- try $ readProcess "docker" ["rm", "-f", submissionId] ""
-        case result of
-          Left (e :: IOException) -> putStrLn $ "error while cleaning up: " ++ show e
-          _ -> pure ()
-        removeDirectoryRecursive dir
+        when runInDocker $ do
+          result <- try $ readProcess "docker" ["rm", "-f", submissionId] ""
+          case result of
+            Left (e :: IOException) -> putStrLn $ "error while cleaning up: " ++ show e
+            _ -> pure ()
+        removeDirectoryRecursive tempdir
 
     performCheck :: _ -> IO CheckResult
-    performCheck (_, _, Left e) = do
+    performCheck (_, _, Left e, _) = do
       let errorMsg = "server side failure: " ++ show (e :: IOException)
       putStrLn errorMsg
       pure $ CheckResult False errorMsg
-    performCheck (_, _, Right handlers) = do
+    performCheck (_, tempdir, Right handlers, runInDocker) = do
       let (Just hin, Just hout, _, _) = handlers
       mapM_ (hPutStrLn hin)
-        [ "cd /tmp"
-        , "cp /mnt/* ."
-        , "ghc -Wall -O2 check.hs 2>&1"
-        , "./check 2>&1"
+        [ if runInDocker
+             then "cd /tmp && cp /mnt/* ."
+             else "cd " ++ tempdir
+        , (if runInDocker then "ghc " else "stack ghc -- ") ++
+            "-Wall -O2 check.hs 2>&1 && ./check 2>&1"
         ]
       hClose hin
 
